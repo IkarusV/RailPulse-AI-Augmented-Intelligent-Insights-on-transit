@@ -1,10 +1,17 @@
 # RailPulse AI
 
+<img width="1964" height="989" alt="image" src="https://github.com/user-attachments/assets/458c15f3-ba45-4200-b9e7-8c5405f79709" />
+
 RailPulse AI is the conversational layer of the RailPulse project to make it accecible to anyone to ask legimate question that can have a verified answerd only based on fact in the database.
 
 After building the Belgian railway SQL database, Azure collection pipeline, and Power BI operations dashboard, this assistant makes the same transit data accessible to people without SQL or analytics knowledge. Users ask operational questions in plain language and receive a direct answer, the supporting data, and a short recommendation.
 
 Instead of manually creating a new dashboard view for every question, RailPulse AI can generate and run the required read-only query on demand.
+
+<img width="1538" height="1110" alt="image" src="https://github.com/user-attachments/assets/df5d0f63-c6f2-44eb-b6d9-425881d9c6e0" />
+
+
+
 
 ## How It Works
 
@@ -26,6 +33,9 @@ Result table and operational summary
 
 The model never connects directly to the database. It proposes one query, which must pass the application safety checks before execution. A second grounded model call summarizes only the validated query result.
 
+<img width="1360" height="991" alt="image" src="https://github.com/user-attachments/assets/35db80cc-efc6-4353-8068-a4d002caf985" />
+
+
 ## Example Questions
 
 - Which platform had the worst average delay?
@@ -36,6 +46,9 @@ The model never connects directly to the database. It proposes one query, which 
 - Which destinations accumulated the most delay?
 
 Every response includes the result table and an expandable copy of the validated SQL, making the answer easy to inspect and verify.
+
+<img width="1618" height="447" alt="image" src="https://github.com/user-attachments/assets/be80ae18-1538-48d5-9c97-7c13f9fce18f" />
+
 
 ## Query Safety
 
