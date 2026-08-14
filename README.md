@@ -4,6 +4,8 @@
 
 RailPulse AI is the conversational layer of the RailPulse project to make it accecible to anyone to ask legimate question that can have a verified answerd only based on fact in the database.
 
+***Live demo at: https://railpulse-ai.streamlit.app/***
+
 After building the Belgian railway SQL database, Azure collection pipeline, and Power BI operations dashboard, this assistant makes the same transit data accessible to people without SQL or analytics knowledge. Users ask operational questions in plain language and receive a direct answer, the supporting data, and a short recommendation.
 
 Instead of manually creating a new dashboard view for every question, RailPulse AI can generate and run the required read-only query on demand.
