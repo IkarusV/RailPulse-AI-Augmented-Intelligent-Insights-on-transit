@@ -167,8 +167,24 @@ scripts/weekly_brief.py     executive report generator
 tests/                      safety and database tests
 ```
 
+## Data Sources
+
+The shared static schedule used across the RailPulse series comes from SNCB Open Data.
+
+**Required attribution:** Source: SNCB – Open Data – 20 July 2026
+
+The live departure snapshot used by this assistant comes from the [iRail API](https://docs.irail.be/) through the RailPulse Azure pipeline.
+
+## Timeline
+
+The project was completed over two days:
+
+- Day 1: Database preparation, LLM integration, and read-only SQL safety.
+- Day 2: Streamlit interface, grounded summaries, testing, and deployment.
+
 ## RailPulse Series
 
 - [Belgian Transit SQL Analysis](https://github.com/IkarusV/Belgian-transit-SQL-analysis)
 - [RailPulse Cloud Azure ETL](https://github.com/IkarusV/railpulse-cloud-azure)
 - [RailPulse Power BI Dashboard](https://github.com/IkarusV/railpulse-powerbi-dashboard)
+- [RailPulse AI](https://github.com/IkarusV/RailPulse-AI-Augmented-Intelligent-Insights-on-transit)
