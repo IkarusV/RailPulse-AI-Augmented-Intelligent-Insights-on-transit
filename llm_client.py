@@ -1,4 +1,5 @@
 import json
+import time
 
 import requests
 
@@ -10,6 +11,14 @@ class LLMError(RuntimeError):
     """Raised when the model service cannot return a usable answer."""
 
     pass
+
+
+class LLMRequestError(LLMError):
+    """Raised after an HTTP request fails, with a safe status and message."""
+
+    def __init__(self, message, status_code=None):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 # Step 1: read provider responses
@@ -36,21 +45,55 @@ def _request_json(path, body):
     if not MODEL:
         raise LLMError("LLM_MODEL is not configured")
 
-    try:
-        response = requests.post(
-            f"{BASE_URL}/{path}",
-            headers={
-                "Authorization": f"Bearer {API_KEY}",
-                "Content-Type": "application/json",
-                "User-Agent": "RailPulse-AI/1.0",
-            },
-            json=body,
-            timeout=REQUEST_TIMEOUT_SECONDS,
+    url = f"{BASE_URL}/{path}"
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+        "User-Agent": "RailPulse-AI/1.0",
+    }
+
+    # Retry rate limits and temporary provider failures with a short backoff.
+    for attempt in range(3):
+        try:
+            response = requests.post(
+                url,
+                headers=headers,
+                json=body,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+        except requests.RequestException as error:
+            if attempt < 2:
+                time.sleep(2**attempt)
+                continue
+            raise LLMRequestError(f"Model service could not be reached: {error}") from error
+
+        if response.status_code < 400:
+            try:
+                return response.json()
+            except requests.JSONDecodeError as error:
+                raise LLMRequestError(
+                    "Model service returned an invalid JSON response",
+                    response.status_code,
+                ) from error
+
+        if response.status_code in {429, 500, 502, 503, 504} and attempt < 2:
+            time.sleep(2**attempt)
+            continue
+
+        try:
+            payload = response.json()
+            detail = payload.get("error", payload)
+            if isinstance(detail, dict):
+                detail = detail.get("message") or detail.get("detail") or str(detail)
+        except requests.JSONDecodeError:
+            detail = response.text.strip()
+        detail = str(detail or "No provider error details")[:300]
+        raise LLMRequestError(
+            f"Model service returned HTTP {response.status_code}: {detail}",
+            response.status_code,
         )
-        response.raise_for_status()
-    except requests.RequestException as error:
-        raise LLMError(f"Model request failed: {error}") from error
-    return response.json()
+
+    raise LLMRequestError("Model request failed after retries")
 
 
 # Step 2: support the two common OpenAI-compatible API styles
@@ -123,7 +166,19 @@ def _create_response(instructions, user_input, *, schema=None, max_tokens=700):
     """Route a generation request through the configured API style."""
 
     if API_STYLE == "responses":
-        return _responses_request(instructions, user_input, schema, max_tokens)
+        try:
+            return _responses_request(instructions, user_input, schema, max_tokens)
+        except LLMRequestError as error:
+            # Some compatible providers route Responses and Chat Completions
+            # differently. A second protocol keeps transient route failures invisible.
+            if error.status_code in {429, 500, 502, 503, 504}:
+                return _chat_completions_request(
+                    instructions,
+                    user_input,
+                    schema,
+                    max(max_tokens, 1_200),
+                )
+            raise
     if API_STYLE == "chat_completions":
         return _chat_completions_request(instructions, user_input, schema, max_tokens)
     raise LLMError(
