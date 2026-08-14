@@ -216,3 +216,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local application configuration
+.env
+
+# Generated database and private notes
+data/*.db
+data/*.download.csv
+PRIVATE_NOTES.md
+start.bat
+
+# Editor settings
+.vscode/
+.idea/
